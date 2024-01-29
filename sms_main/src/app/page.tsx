@@ -6,7 +6,7 @@ import Minimizer from "./Classes/Minimizer";
 
 export default function Home() {
   let testFunc = () => {
-    let fsa = new FSA(undefined, 5, 2);
+    let fsa = new FSA(undefined, 10, 2);
 
     // fsa = fsa.setState(0, 0, 1)
     //   .setState(0, 1, 2)
@@ -34,6 +34,7 @@ export default function Home() {
     let minimizer = new Minimizer(fsa);
 
     console.log(minimizer.toString());
+    console.log(minimizer.getMinimizedStates())
 
   };
 

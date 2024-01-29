@@ -150,6 +150,47 @@ export default class Minimizer {
         }
     }
 
+    public getMinimizedStates() {
+        let newStates: number[][] = [];
+        let states: number[] = new Array(this.fsa.getNStates());
+        for (let i = 0; i < this.fsa.getNStates(); i++) {
+            states[i] = i;
+        }
+
+        let queue = [states];
+        for (let i = 0; i < this.fsa.getNStates(); i++) {
+            let newQueue: number[][] = [];
+            while (queue.length > 0) {
+                let currentStates = queue.pop();
+                if (currentStates === undefined) {
+                    break;
+                }
+
+                if (!currentStates?.includes(i) && !(newStates.some((state) => currentStates?.every((s) => state?.includes(s))))) {
+                    newStates.push(currentStates);
+                    continue;
+                }
+
+                let left = currentStates?.filter((state) => state != i)
+                if (left.length > 0 && !(newStates.some((state) => left?.every((s) => state?.includes(s))))
+                    && !(newQueue.some((state) => left?.every((s) => state?.includes(s))))) {
+                    newQueue.push(left);
+                }
+
+                let right = currentStates?.filter((state) => (state == i) || this.getDistinguibility(state, i) != Distinguibility.DISTINGUISHABLE);
+                if (right.length > 0 && !(newStates.some((state) => right?.every((s) => state?.includes(s))))
+                    && !(newQueue.some((state) => right?.every((s) => state?.includes(s))))) {
+                    newQueue.push(right);
+                }
+            }
+            queue = newQueue;
+        }
+
+        queue = queue.filter((states) => !(newStates.some((state) => states?.every((s) => state?.includes(s)))))
+        newStates = newStates.concat(queue);
+        return newStates;
+    }
+
     public toString() {
         let str = "";
         str += "Distinguibility Array\n";
