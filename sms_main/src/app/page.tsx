@@ -35,6 +35,7 @@ export default function Home() {
 
     console.log(minimizer.toString());
     console.log(minimizer.getMinimizedStates())
+    console.log(minimizer.getMinimizedFSA().toString())
 
   };
 

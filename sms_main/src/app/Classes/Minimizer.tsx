@@ -12,6 +12,8 @@ export default class Minimizer {
     private fsa: FSA;
     private DistinguibilityArray: Distinguibility[];
     private LookAheadHashMap: Map<number, number[]>;
+    private minimizedStates: number[][] | undefined = undefined;
+    private minimizedFSA: FSA | undefined = undefined;
 
     constructor(fsa: FSA) {
         this.fsa = fsa;
@@ -150,8 +152,7 @@ export default class Minimizer {
         }
     }
 
-    public getMinimizedStates() {
-        let newStates: number[][] = [];
+    private computeMinimizedStates() {
         let states: number[] = new Array(this.fsa.getNStates());
         for (let i = 0; i < this.fsa.getNStates(); i++) {
             states[i] = i;
@@ -166,29 +167,101 @@ export default class Minimizer {
                     break;
                 }
 
-                if (!currentStates?.includes(i) && !(newStates.some((state) => currentStates?.every((s) => state?.includes(s))))) {
-                    newStates.push(currentStates);
+                if (!currentStates?.includes(i)) {
+                    newQueue.push(currentStates);
                     continue;
                 }
 
                 let left = currentStates?.filter((state) => state != i)
-                if (left.length > 0 && !(newStates.some((state) => left?.every((s) => state?.includes(s))))
-                    && !(newQueue.some((state) => left?.every((s) => state?.includes(s))))) {
+                if (left.length > 0) {
                     newQueue.push(left);
                 }
 
                 let right = currentStates?.filter((state) => (state == i) || this.getDistinguibility(state, i) != Distinguibility.DISTINGUISHABLE);
-                if (right.length > 0 && !(newStates.some((state) => right?.every((s) => state?.includes(s))))
-                    && !(newQueue.some((state) => right?.every((s) => state?.includes(s))))) {
+                if (right.length > 0) {
                     newQueue.push(right);
                 }
             }
-            queue = newQueue;
+            queue = [];
+
+            newQueue.forEach((states1, i) => {
+                if (!newQueue.some((states2, j) => i != j && states1?.every((s) => states2?.includes(s)))) {
+                    queue.push(states1);
+                }
+            }
+            );
+
         }
 
-        queue = queue.filter((states) => !(newStates.some((state) => states?.every((s) => state?.includes(s)))))
-        newStates = newStates.concat(queue);
-        return newStates;
+        this.minimizedStates = queue;
+    }
+
+    public getMinimizedStates() {
+        if (this.minimizedStates === undefined) {
+            this.computeMinimizedStates();
+        }
+        return this.minimizedStates;
+    }
+
+    private computeMinimizedFSA() {
+        let newStates = this.getMinimizedStates();
+
+        if (newStates === undefined) {
+            throw new Error("newStates is undefined, this should never happen");
+        }
+
+        let newFSA = new FSA(undefined, newStates.length, this.fsa.getNSymbols());
+        for (let i = 0; i < newStates.length; i++) {
+            for (let j = 0; j < this.fsa.getNSymbols(); j++) {
+                let nextStates = new Set<number>();
+                let nextSymbols = new Set<number>();
+
+                for (let k = 0; k < newStates[i].length; k++) {
+                    let state = newStates[i][k];
+                    let nextState = this.fsa.getState(state, j);
+                    let nextSymbol = this.fsa.getSymbol(state, j);
+
+                    if (nextState != FSA.DONT_CARE) {
+                        nextStates.add(nextState);
+                    }
+
+                    if (nextSymbol != FSA.DONT_CARE) {
+                        nextSymbols.add(nextSymbol);
+                    }
+                }
+
+                let nextStatesArray = Array.from(nextStates);
+                let nextNewState = newStates.findIndex((state) => nextStatesArray.every((s) => state.includes(s)));
+
+                if (nextNewState == -1) {
+                    throw new Error("nextNewState not found, this should never happen:\n" + "\nnextStatesArray:" + nextStatesArray + "\nnextStates:" + newStates);
+                }
+
+                newFSA = newFSA.setState(i, j, nextNewState);
+
+                if (nextSymbols.size > 1) {
+                    throw new Error("nextSymbols.size > 1, this should never happen: " + nextSymbols + " " + nextStates);
+                }
+
+                if (nextSymbols.size != 0) {
+                    newFSA = newFSA.setSymbol(i, j, nextSymbols.values().next().value);
+                }
+            }
+        }
+
+        this.minimizedFSA = newFSA;
+    }
+
+    public getMinimizedFSA() {
+        if (this.minimizedFSA === undefined) {
+            this.computeMinimizedFSA();
+        }
+
+        if (this.minimizedFSA === undefined) {
+            throw new Error("this.minimizedFSA is undefined, this should never happen");
+        }
+
+        return this.minimizedFSA;
     }
 
     public toString() {

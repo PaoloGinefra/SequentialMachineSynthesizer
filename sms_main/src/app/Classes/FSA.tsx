@@ -58,22 +58,32 @@ export default class FSA {
         }
     }
 
-    private randomStates() {
+    private randomStates(dcProb: number = 0.5) {
         this.stateTransitionMatrix = new Array(this.n_states);
         for (let i = 0; i < this.n_states; i++) {
             this.stateTransitionMatrix[i] = new Array(this.n_symbols);
             for (let j = 0; j < this.n_symbols; j++) {
-                this.stateTransitionMatrix[i][j] = Math.floor(Math.random() * this.n_states);
+                if (Math.random() > dcProb) {
+                    this.stateTransitionMatrix[i][j] = Math.floor(Math.random() * this.n_states);
+                }
+                else {
+                    this.stateTransitionMatrix[i][j] = FSA.DONT_CARE;
+                }
             }
         }
     }
 
-    private randomSymbols() {
+    private randomSymbols(dcProb: number = 0.5) {
         this.symbolTransitionMatrix = new Array(this.n_states);
         for (let i = 0; i < this.n_states; i++) {
             this.symbolTransitionMatrix[i] = new Array(this.n_symbols);
             for (let j = 0; j < this.n_symbols; j++) {
-                this.symbolTransitionMatrix[i][j] = Math.floor(Math.random() * this.n_symbols);
+                if (Math.random() > dcProb) {
+                    this.symbolTransitionMatrix[i][j] = Math.floor(Math.random() * this.n_symbols);
+                }
+                else {
+                    this.symbolTransitionMatrix[i][j] = FSA.DONT_CARE;
+                }
             }
         }
     }
