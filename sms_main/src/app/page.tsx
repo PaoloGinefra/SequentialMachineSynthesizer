@@ -1,8 +1,7 @@
 'use client';
-import Image from "next/image";
-import { useEffect } from "react";
 import FSA from "./Classes/FSA";
 import Minimizer from "./Classes/Minimizer";
+import TestSketch from "./Components/p5/TestSketch";
 
 export default function Home() {
   let testFunc = () => {
@@ -46,6 +45,7 @@ export default function Home() {
       >
         Button
       </button>
+      <TestSketch />
     </main>
   );
 }
