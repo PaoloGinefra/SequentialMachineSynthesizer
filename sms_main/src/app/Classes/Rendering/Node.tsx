@@ -25,4 +25,12 @@ export default class Node {
     public getPosition() {
         return this.position;
     }
+
+    public applyForce(force: p5.Vector) {
+        this.position.add(force);
+    }
+
+    public scalePosition(scaleFactor: number) {
+        this.position.mult(scaleFactor);
+    }
 }

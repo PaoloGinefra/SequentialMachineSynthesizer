@@ -29,7 +29,10 @@ function sketch(p5: P5CanvasInstance<MySketchProps>) {
 
     p5.draw = () => {
         p5.background(20);
+        p5.translate(p5.width / 2, p5.height / 2);
         fsaRenderer.draw(p5);
+
+        fsaRenderer.simulationStep(p5);
     };
 
     p5.windowResized = () => {
