@@ -1,13 +1,13 @@
 import p5 from "p5";
 import FSA from "../FSA";
 import Node from "./Node";
-import Connection from "./Connection";
+import { Connection, NormalConnection, SelfLoopConnection, SymmetricConnection } from "./Connection";
 
 export default class FSARenderer {
     private nodes: Node[] = [];
     private connections: Connection[] = [];
-    private targetConnectionLength: number = 2000;
-    private springConstant: number = 2;
+    private targetConnectionLength: number = 300;
+    private springConstant: number = 0.001;
 
     constructor(private fsa: FSA, p5: p5) {
         this.nodesFromFSA(p5);
@@ -29,12 +29,30 @@ export default class FSARenderer {
     private connectionsFromFSA(p5: p5) {
         this.connections = [];
         for (let i = 0; i < this.fsa.getNStates(); i++) {
+            let connectionsHash: { [key: number]: Connection } = {};
             for (let j = 0; j < this.fsa.getNSymbols(); j++) {
                 let nextState = this.fsa.getState(i, j);
                 let nextSymbol = this.fsa.getSymbol(i, j);
                 if (nextState != FSA.DONT_CARE) {
-                    this.connections.push(new Connection(this.nodes[i], this.nodes[nextState], j, nextSymbol));
+                    if (connectionsHash[nextState] == undefined) {
+                        if (i == nextState)
+                            connectionsHash[nextState] = new SelfLoopConnection(this.nodes[i], j, nextSymbol);
+                        else if (Array.from(Array(this.fsa.getNSymbols()).keys()).some(k => this.fsa.getState(nextState, k) == i)) {
+                            console.log("symmetric: " + i + " " + nextState)
+                            connectionsHash[nextState] = new SymmetricConnection(this.nodes[i], this.nodes[nextState], j, nextSymbol, i < nextState);
+                        }
+                        else {
+                            connectionsHash[nextState] = new NormalConnection(this.nodes[i], this.nodes[nextState], j, nextSymbol);
+                        }
+                    }
+                    else {
+                        if (i != nextState)
+                            connectionsHash[nextState].addInputOutput(j, nextSymbol);
+                    }
                 }
+            }
+            for (let nextState in connectionsHash) {
+                this.connections.push(connectionsHash[nextState]);
             }
         }
     }
@@ -42,7 +60,8 @@ export default class FSARenderer {
     private getForce(node1: Node, node2: Node) {
         let dir = node2.getPosition().copy().sub(node1.getPosition());
         let distance = dir.mag();
-        let force = dir.normalize().mult(this.springConstant * Math.log(distance / this.targetConnectionLength));
+        //let force = dir.normalize().mult(this.springConstant * Math.log(distance / this.targetConnectionLength));
+        let force = dir.normalize().mult(this.springConstant * (-Math.pow(this.targetConnectionLength, 2) / distance + Math.pow(distance, 2) / this.targetConnectionLength));
         return force;
     }
 
@@ -50,9 +69,10 @@ export default class FSARenderer {
         let offset = this.nodes.reduce((acc, node) => acc.add(node.getPosition()), p5.createVector(0, 0)).div(this.nodes.length).mult(-1);
         this.nodes.forEach(node => node.applyForce(offset));
 
-        let maxDistance = this.nodes.reduce((acc, node) => Math.max(acc, node.getPosition().mag()), 0);
-        let scaleFactor = p5.min(p5.width / 2, p5.height / 2) / maxDistance;
-        this.nodes.forEach(node => node.scalePosition(scaleFactor));
+        // let maxDistance = this.nodes.reduce((acc, node) => Math.max(acc, node.getPosition().mag()), 0);
+        // let scaleFactor = p5.min(p5.width / 2, p5.height / 2) / maxDistance;
+        // if (scaleFactor < 1)
+        //     this.nodes.forEach(node => node.scalePosition(scaleFactor));
     }
 
     public simulationStep(p5: p5) {
