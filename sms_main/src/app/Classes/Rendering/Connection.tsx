@@ -259,12 +259,17 @@ export class SymmetricConnection extends Connection {
         let to = this.getTo();
         let label = this.getLabel();
 
+
         let middlePoint = from.getPosition().copy().add(to.getPosition()).div(2);
 
         let width = p5.textWidth(label);
         let height = p5.textAscent() + p5.textDescent();
 
-        let labelCenter = middlePoint.copy().add(p5.createVector(this.ImFirst ? width / 2 : -width / 2, this.ImFirst ? height / 2 : -height / 2));
+        let normalizedPos = from.getPosition().copy().sub(middlePoint);
+        let flip = -(Math.sign(normalizedPos.x) * Math.sign(normalizedPos.y));
+
+        let labelOffset = p5.createVector(this.ImFirst ? width / 2 : -width / 2, flip * (this.ImFirst ? height / 2 : -height / 2));
+        let labelCenter = middlePoint.copy().add(labelOffset);
 
 
         p5.stroke(Connection.CONNECTION_COLOR);
@@ -301,10 +306,11 @@ export class SymmetricConnection extends Connection {
 
         p5.rectMode(p5.CORNER);
         p5.stroke(Connection.CONNECTION_COLOR);
+        let y = (-height - 10);
         if (this.ImFirst)
-            p5.rect(0, 0, width + 10, height + 10, 5);
+            p5.rect(0, y * (-flip + 1) / 2, width + 10, height + 10, 5);
         else
-            p5.rect(-width - 10, -height - 10, width + 10, height + 10, 5);
+            p5.rect(-width - 10, y * (flip + 1) / 2, width + 10, height + 10, 5);
 
         p5.fill(Connection.LABEL_COLOR);
         p5.stroke(Connection.LABEL_COLOR);
@@ -312,9 +318,9 @@ export class SymmetricConnection extends Connection {
         p5.textSize(Connection.LABEL_FONT_SIZE);
         p5.textAlign(p5.CENTER, p5.CENTER);
         if (this.ImFirst)
-            p5.text(label, (width + 10) / 2, (height + 10) / 2);
+            p5.text(label, (width + 10) / 2, (height + 10) / 2 * flip);
         else
-            p5.text(label, -(width + 10) / 2, -(height + 10) / 2);
+            p5.text(label, -(width + 10) / 2, -(height + 10) / 2 * flip);
 
         p5.pop();
 
