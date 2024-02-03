@@ -44,10 +44,10 @@ export class SpringEmbeddingSimulator implements Simulator {
 
 export class ChainedElectronSimulator implements Simulator {
     public renderer: FSARenderer;
-    private targetConnectionLength: number = 200;
-    private electronConstant: number = 10000;
+    private targetConnectionLength: number = 250;
+    private electronConstant: number = 100000;
     private chainConstant: number = 1;
-    private radialConstant: number = 1;
+    private radialConstant: number = 0;
     private chainPasses: number = 3;
 
     constructor(renderer: FSARenderer) {
@@ -93,7 +93,7 @@ export class ChainedElectronSimulator implements Simulator {
         }
 
         for (let pass = 0; pass < this.chainPasses; pass++) {
-            for (let i = 0; i < nodes.length - 1; i++) {
+            for (let i = 0; i < nodes.length; i++) {
                 for (let j = 0; j < nodes.length; j++) {
                     if (i != j && this.renderer.getConnection(i, j) != undefined) {
                         this.applyChainForces(nodes[i], nodes[j], p5);

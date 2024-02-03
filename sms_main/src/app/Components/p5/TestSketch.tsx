@@ -15,7 +15,7 @@ function sketch(p5: P5CanvasInstance<MySketchProps>) {
     let fsaRenderer: FSARenderer;
 
     p5.setup = () => {
-        p5.createCanvas(p5.windowWidth * 0.8, 400);
+        p5.createCanvas(p5.windowWidth * 0.8, 800);
         fsaRenderer = new FSARenderer(fsa, p5);
         console.log(fsa.toString());
     }
@@ -36,7 +36,7 @@ function sketch(p5: P5CanvasInstance<MySketchProps>) {
     };
 
     p5.windowResized = () => {
-        p5.resizeCanvas(p5.windowWidth * 0.8, 400);
+        p5.resizeCanvas(p5.windowWidth * 0.8, 800);
     }
 }
 
