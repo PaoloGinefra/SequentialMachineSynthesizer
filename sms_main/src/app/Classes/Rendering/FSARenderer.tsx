@@ -2,12 +2,12 @@ import p5 from "p5";
 import FSA from "../FSA";
 import Node from "./Node";
 import { Connection, NormalConnection, SelfLoopConnection, SymmetricConnection } from "./Connection";
-import { Simulator, SpringEmbeddingSimulator } from "./Simulator";
+import { Simulator, SpringEmbeddingSimulator, ChainedElectronSimulator } from "./Simulator";
 
 export default class FSARenderer {
     private nodes: Node[] = [];
     private connections: Connection[][] = [];
-    private simulator: Simulator = new SpringEmbeddingSimulator(this);
+    private simulator: Simulator = new ChainedElectronSimulator(this);
 
     constructor(private fsa: FSA, p5: p5) {
         this.nodesFromFSA(p5);
