@@ -7,17 +7,20 @@ import FSA from "@/app/Classes/FSA";
 
 import p5 from 'p5';
 import InputHandler from "@/app/Classes/Input/InputHandler";
-import { Translate } from "@/app/Classes/Input/Action";
+import { Translate, Scale } from "@/app/Classes/Input/Action";
 
 type MySketchProps = SketchProps & {
     rotation: number;
 };
+let inputHandler: InputHandler;
 
 function sketch(p5: P5CanvasInstance<MySketchProps>) {
     let rotation = 0;
     let fsa = new FSA(undefined, 50, 2);
     let fsaRenderer: FSARenderer;
-    let inputHandler = new InputHandler(new Translate(p5));
+
+    inputHandler = new InputHandler(p5, new Translate(p5));
+    inputHandler.addAction(new Scale(p5));
 
     p5.setup = () => {
         p5.createCanvas(p5.windowWidth * 0.8, 800);
@@ -34,8 +37,8 @@ function sketch(p5: P5CanvasInstance<MySketchProps>) {
 
     p5.draw = () => {
         p5.background(20);
-        inputHandler.loop(p5);
         p5.translate(p5.width / 2, p5.height / 2);
+        inputHandler.loop(p5);
         fsaRenderer.draw(p5);
 
         fsaRenderer.simulationStep(p5);
@@ -72,5 +75,8 @@ export default function TestSketch() {
         };
     }, []);
 
-    return <NextReactP5Wrapper sketch={sketch} rotation={rotation} />;
+    return <>
+        <NextReactP5Wrapper sketch={sketch} rotation={rotation} />
+        {inputHandler && inputHandler.render()}
+    </>
 }
