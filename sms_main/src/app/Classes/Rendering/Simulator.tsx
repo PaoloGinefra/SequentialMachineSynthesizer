@@ -44,11 +44,11 @@ export class SpringEmbeddingSimulator implements Simulator {
 
 export class ChainedElectronSimulator implements Simulator {
     public renderer: FSARenderer;
-    private targetConnectionLength: number = 250;
+    private targetConnectionLength: number = 200;
     private electronConstant: number = 100000;
-    private chainConstant: number = 1;
+    private chainConstant: number = 0.1;
     private radialConstant: number = 0;
-    private chainPasses: number = 3;
+    private chainPasses: number = 1;
 
     constructor(renderer: FSARenderer) {
         this.renderer = renderer;

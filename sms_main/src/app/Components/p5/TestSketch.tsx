@@ -5,14 +5,19 @@ import { useEffect, useState } from "react";
 import FSARenderer from "@/app/Classes/Rendering/FSARenderer";
 import FSA from "@/app/Classes/FSA";
 
+import p5 from 'p5';
+import InputHandler from "@/app/Classes/Input/InputHandler";
+import { Translate } from "@/app/Classes/Input/Action";
+
 type MySketchProps = SketchProps & {
     rotation: number;
 };
 
 function sketch(p5: P5CanvasInstance<MySketchProps>) {
     let rotation = 0;
-    let fsa = new FSA(undefined, 5, 5);
+    let fsa = new FSA(undefined, 50, 2);
     let fsaRenderer: FSARenderer;
+    let inputHandler = new InputHandler(new Translate(p5));
 
     p5.setup = () => {
         p5.createCanvas(p5.windowWidth * 0.8, 800);
@@ -29,6 +34,7 @@ function sketch(p5: P5CanvasInstance<MySketchProps>) {
 
     p5.draw = () => {
         p5.background(20);
+        inputHandler.loop(p5);
         p5.translate(p5.width / 2, p5.height / 2);
         fsaRenderer.draw(p5);
 
@@ -37,6 +43,18 @@ function sketch(p5: P5CanvasInstance<MySketchProps>) {
 
     p5.windowResized = () => {
         p5.resizeCanvas(p5.windowWidth * 0.8, 800);
+    }
+
+    p5.mouseClicked = () => {
+        inputHandler.mouseClicked(p5);
+    }
+
+    p5.mousePressed = () => {
+        inputHandler.mousePressed(p5);
+    }
+
+    p5.mouseReleased = () => {
+        inputHandler.mouseReleased(p5);
     }
 }
 
